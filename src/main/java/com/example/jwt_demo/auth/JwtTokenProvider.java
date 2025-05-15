@@ -11,17 +11,28 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final String SECRET_KEY = "MyJwtSecretKey12345678901234567890!";
-    private final long EXPIRATION_MS = 1000 * 60 * 60; // 1시간
+    private final long ACCESS_EXPIRATION_MS = 1000 * 60 * 15; // 15분
+    private final long REFRESH_EXPIRATION_MS = 1000 * 60 * 60 * 24 * 7; // 7일
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    // 토큰 생성
-    public String generateToken(String username, String role) {
+    // Access token
+    public String generateAccessToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION_MS))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    // Refresh token
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
